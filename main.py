@@ -12,6 +12,9 @@ from pymongo import MongoClient
 import aiohttp
 from collections import defaultdict, deque
 
+# 🔮 IMPORT DA AQUA (ARQUIVO SEPARADO)
+from aqua_ia import processar_comando_aqua
+
 # ===============================
 # TOKEN & MONGO
 # ===============================
@@ -217,6 +220,16 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # 🔮 INTERCEPTOR INTELIGENTE DA AQUA
+    if "aqua" in message.content.lower():
+        if not message.author.guild_permissions.administrator:
+            await message.channel.send("Não tens autoridade para dar ordens administrativas à Aqua.")
+            return
+        
+        await processar_comando_aqua(message)
+        await bot.process_commands(message)
+        return
+
     # 🔞 IMAGENS (NSFW CHECK)
     if message.attachments:
         for anexo in message.attachments:
@@ -283,7 +296,7 @@ async def on_message(message):
             )
 
             regras_msg = await thread.send(REGRAS)
-            await regras_msg.pin()
+            await rules_msg.pin()
 
         except Exception as e:
             print("Erro ao criar tópico:", e)
@@ -340,3 +353,4 @@ async def setup_hook():
 
 if __name__ == "__main__":
     bot.run(TOKEN)
+    
